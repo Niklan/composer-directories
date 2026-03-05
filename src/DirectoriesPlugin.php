@@ -23,7 +23,7 @@ use Composer\Util\Filesystem;
  *   "extra": {
  *       "ensure-directories": [
  *           "var/log",
- *           {"path": "var/files/public", "permissions": "0755"}
+ *           {"path": "var/files/private", "permissions": "0700"}
  *       ],
  *       "symlinks": {
  *           "var/files/public": "web/sites/default/files"
@@ -81,13 +81,15 @@ final class DirectoriesPlugin implements PluginInterface, EventSubscriberInterfa
         /** @var list<string|array{path: string, permissions?: string}> $directories */
         $directories = $extra['ensure-directories'] ?? [];
 
+        // Default matches Drupal's CHMOD_DIRECTORY (0775).
+        // @see https://git.drupalcode.org/project/drupal/-/blob/aea47fe1b2bf7945548988ca14d069b83273f2a5/core/lib/Drupal/Core/File/FileSystem.php#L27
         foreach ($directories as $entry) {
             if (\is_array($entry)) {
                 $path = $entry['path'];
-                $permissions = \intval($entry['permissions'] ?? '0755', 8);
+                $permissions = \intval($entry['permissions'] ?? '0775', 8);
             } else {
                 $path = $entry;
-                $permissions = 0755;
+                $permissions = 0775;
             }
 
             $this->ensureDirectory($baseDir, $path, $permissions);

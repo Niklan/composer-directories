@@ -18,7 +18,7 @@ Add configuration to the `extra` section of your `composer.json`:
         "ensure-directories": [
             "web/sites/simpletest/browser_output",
             "var/log",
-            {"path": "var/files/public", "permissions": "0755"},
+            "var/files/public",
             {"path": "var/files/private", "permissions": "0700"}
         ],
         "symlinks": {
@@ -32,7 +32,7 @@ Both features work independently -- you can use directories, symlinks, or both.
 
 ### Directories
 
-- String entries use the default permission `0755` (`drwxr-xr-x`).
+- String entries use the default permission `0775` (`drwxrwxr-x`), matching the [Drupal default](https://git.drupalcode.org/project/drupal/-/blob/aea47fe1b2bf7945548988ca14d069b83273f2a5/core/lib/Drupal/Core/File/FileSystem.php#L27).
 - Object entries accept a `path` and an optional `permissions` string in [octal format](https://en.wikipedia.org/wiki/File-system_permissions#Numeric_notation).
 - All paths are relative to the project root (where `composer.json` is located).
 
