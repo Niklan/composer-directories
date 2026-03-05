@@ -32,7 +32,7 @@ Both features work independently -- you can use directories, symlinks, or both.
 
 ### Directories
 
-- String entries use the default permission `0777` (respecting your system's umask).
+- String entries use the default permission `0755` (`drwxr-xr-x`).
 - Object entries accept a `path` and an optional `permissions` string in [octal format](https://en.wikipedia.org/wiki/File-system_permissions#Numeric_notation).
 - All paths are relative to the project root (where `composer.json` is located).
 

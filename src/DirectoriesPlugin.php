@@ -84,10 +84,10 @@ final class DirectoriesPlugin implements PluginInterface, EventSubscriberInterfa
         foreach ($directories as $entry) {
             if (\is_array($entry)) {
                 $path = $entry['path'];
-                $permissions = \intval($entry['permissions'] ?? '0777', 8);
+                $permissions = \intval($entry['permissions'] ?? '0755', 8);
             } else {
                 $path = $entry;
-                $permissions = 0777;
+                $permissions = 0755;
             }
 
             $this->ensureDirectory($baseDir, $path, $permissions);
