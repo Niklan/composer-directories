@@ -101,6 +101,9 @@
     <rule ref="SlevomatCodingStandard.Functions.RequireTrailingCommaInDeclaration"/>
     <rule ref="SlevomatCodingStandard.Functions.RequireTrailingCommaInClosureUse"/>
 
+    <!-- Complexity -->
+    <rule ref="SlevomatCodingStandard.Complexity.Cognitive"/>
+
     <!-- Commenting cleanup -->
     <rule ref="SlevomatCodingStandard.Commenting.EmptyComment"/>
     <rule ref="SlevomatCodingStandard.Commenting.UselessFunctionDocComment"/>

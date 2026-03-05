@@ -140,41 +140,14 @@ final class DirectoriesPlugin implements PluginInterface, EventSubscriberInterfa
         $absoluteLink = $this->filesystem->normalizePath($baseDir . '/' . $link);
         $absoluteTarget = $this->filesystem->normalizePath($baseDir . '/' . $target);
 
-        if (!$this->isWithinBaseDir($absoluteLink, $baseDir)) {
-            $this->io->writeError(\sprintf(
-                '  <warning>Skipped symlink outside project root: %s</warning>',
-                $link,
-            ));
-
-            return;
-        }
-
-        if (!$this->isWithinBaseDir($absoluteTarget, $baseDir)) {
-            $this->io->writeError(\sprintf(
-                '  <warning>Skipped symlink target outside project root: %s</warning>',
-                $target,
-            ));
-
+        if (!$this->validateSymlinkPaths($absoluteLink, $absoluteTarget, $baseDir, $target, $link)) {
             return;
         }
 
         $linkDir = \dirname($absoluteLink);
         $this->filesystem->ensureDirectoryExists($linkDir);
 
-        if (\is_link($absoluteLink)) {
-            try {
-                $this->filesystem->unlink($absoluteLink);
-            } catch (\RuntimeException) {
-                // The link may have been removed between is_link() and
-                // unlink() due to a stale PHP stat cache or another plugin
-                // modifying the filesystem during the same event.
-            }
-        } elseif (\file_exists($absoluteLink)) {
-            $this->io->writeError(\sprintf(
-                '  <warning>"%s" exists and is not a symlink, skipping</warning>',
-                $link,
-            ));
-
+        if (!$this->prepareLinkPath($absoluteLink, $link)) {
             return;
         }
 
@@ -191,6 +164,65 @@ final class DirectoriesPlugin implements PluginInterface, EventSubscriberInterfa
             $link,
             $relativeTarget,
         ));
+    }
+
+    private function validateSymlinkPaths(
+        string $absoluteLink,
+        string $absoluteTarget,
+        string $baseDir,
+        string $target,
+        string $link,
+    ): bool {
+        if (!$this->isWithinBaseDir($absoluteLink, $baseDir)) {
+            $this->io->writeError(\sprintf(
+                '  <warning>Skipped symlink outside project root: %s</warning>',
+                $link,
+            ));
+
+            return false;
+        }
+
+        if (!$this->isWithinBaseDir($absoluteTarget, $baseDir)) {
+            $this->io->writeError(\sprintf(
+                '  <warning>Skipped symlink target outside project root: %s</warning>',
+                $target,
+            ));
+
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Removes an existing symlink or reports a conflict.
+     *
+     * @return bool Whether the path is clear for symlink creation.
+     */
+    private function prepareLinkPath(string $absoluteLink, string $link): bool
+    {
+        if (\is_link($absoluteLink)) {
+            try {
+                $this->filesystem->unlink($absoluteLink);
+            } catch (\RuntimeException) {
+                // The link may have been removed between is_link() and
+                // unlink() due to a stale PHP stat cache or another plugin
+                // modifying the filesystem during the same event.
+            }
+
+            return true;
+        }
+
+        if (\file_exists($absoluteLink)) {
+            $this->io->writeError(\sprintf(
+                '  <warning>"%s" exists and is not a symlink, skipping</warning>',
+                $link,
+            ));
+
+            return false;
+        }
+
+        return true;
     }
 
     private function isWithinBaseDir(string $path, string $baseDir): bool
