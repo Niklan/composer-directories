@@ -110,6 +110,12 @@ final class DirectoriesPlugin implements PluginInterface, EventSubscriberInterfa
         }
 
         if (\is_dir($absolutePath)) {
+            $this->io->write(
+                \sprintf('  Directory exists: <info>%s</info>', $directory),
+                true,
+                IOInterface::VERBOSE,
+            );
+
             return;
         }
 
@@ -147,7 +153,7 @@ final class DirectoriesPlugin implements PluginInterface, EventSubscriberInterfa
         $linkDir = \dirname($absoluteLink);
         $this->filesystem->ensureDirectoryExists($linkDir);
 
-        if (!$this->prepareLinkPath($absoluteLink, $link)) {
+        if (!$this->prepareLinkPath($absoluteLink, $absoluteTarget, $link)) {
             return;
         }
 
@@ -199,18 +205,10 @@ final class DirectoriesPlugin implements PluginInterface, EventSubscriberInterfa
      *
      * @return bool Whether the path is clear for symlink creation.
      */
-    private function prepareLinkPath(string $absoluteLink, string $link): bool
+    private function prepareLinkPath(string $absoluteLink, string $absoluteTarget, string $link): bool
     {
         if (\is_link($absoluteLink)) {
-            try {
-                $this->filesystem->unlink($absoluteLink);
-            } catch (\RuntimeException) {
-                // The link may have been removed between is_link() and
-                // unlink() due to a stale PHP stat cache or another plugin
-                // modifying the filesystem during the same event.
-            }
-
-            return true;
+            return $this->handleExistingSymlink($absoluteLink, $absoluteTarget, $link);
         }
 
         if (\file_exists($absoluteLink)) {
@@ -223,6 +221,45 @@ final class DirectoriesPlugin implements PluginInterface, EventSubscriberInterfa
         }
 
         return true;
+    }
+
+    private function handleExistingSymlink(string $absoluteLink, string $absoluteTarget, string $link): bool
+    {
+        if ($this->symlinkMatchesTarget($absoluteLink, $absoluteTarget)) {
+            $this->io->write(
+                \sprintf('  Symlink exists: <info>%s</info>', $link),
+                true,
+                IOInterface::VERBOSE,
+            );
+
+            return false;
+        }
+
+        try {
+            $this->filesystem->unlink($absoluteLink);
+        } catch (\RuntimeException) {
+            // The link may have been removed between is_link() and
+            // unlink() due to a stale PHP stat cache or another plugin
+            // modifying the filesystem during the same event.
+        }
+
+        return true;
+    }
+
+    private function symlinkMatchesTarget(string $absoluteLink, string $absoluteTarget): bool
+    {
+        $rawTarget = @\readlink($absoluteLink);
+
+        if (!\is_string($rawTarget)) {
+            return false;
+        }
+
+        $linkDir = \dirname($absoluteLink);
+        $currentTarget = $this->filesystem->normalizePath(
+            \str_starts_with($rawTarget, '/') ? $rawTarget : $linkDir . '/' . $rawTarget,
+        );
+
+        return $currentTarget === $absoluteTarget;
     }
 
     private function isWithinBaseDir(string $path, string $baseDir): bool

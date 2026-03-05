@@ -63,7 +63,13 @@ final class DirectoriesPluginTest extends TestCase
         mkdir($this->tempDir . '/existing', 0777, true);
 
         $io = $this->createMock(IOInterface::class);
-        $io->expects(self::never())->method('write');
+        $io->expects(self::once())
+            ->method('write')
+            ->with(
+                self::stringContains('Directory exists'),
+                true,
+                IOInterface::VERBOSE,
+            );
 
         $plugin = $this->createActivatedPlugin([
             'ensure-directories' => ['existing'],

@@ -39,8 +39,23 @@ Both features work independently -- you can use directories, symlinks, or both.
 ### Symlinks
 
 - Keys are targets, values are link paths. Both are relative to the project root.
-- If a symlink already exists, it is replaced. If a non-symlink file/directory exists at the link path, it is skipped with a warning.
+- If a symlink already exists and points to the correct target, it is left as-is. If it points elsewhere, it is replaced.
+- If a non-symlink file/directory exists at the link path, it is skipped with a warning.
 - On Windows, directory junctions are used instead of symlinks (no admin rights needed).
+
+### Verbose output
+
+Run `composer install -v` to see skipped directories and symlinks that already exist:
+
+```
+> post-install-cmd: Niklan\ComposerDirectories\DirectoriesPlugin->onPostCommand
+  Directory exists: var/files/private
+  Directory exists: var/files/private/translations
+  Directory exists: var/files/public
+  Directory exists: var/files/temporary
+  Directory exists: var/log
+  Symlink exists: web/sites/default/files
+```
 
 ### Security
 
