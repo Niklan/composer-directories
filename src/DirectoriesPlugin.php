@@ -160,7 +160,13 @@ final class DirectoriesPlugin implements PluginInterface, EventSubscriberInterfa
         $this->filesystem->ensureDirectoryExists($linkDir);
 
         if (\is_link($absoluteLink)) {
-            $this->filesystem->unlink($absoluteLink);
+            try {
+                $this->filesystem->unlink($absoluteLink);
+            } catch (\RuntimeException) {
+                // The link may have been removed between is_link() and
+                // unlink() due to a stale PHP stat cache or another plugin
+                // modifying the filesystem during the same event.
+            }
         } elseif (\file_exists($absoluteLink)) {
             $this->io->writeError(\sprintf(
                 '  <warning>"%s" exists and is not a symlink, skipping</warning>',
