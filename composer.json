@@ -1,0 +1,62 @@
+{
+    "name": "niklan/composer-directories",
+    "description": "Composer plugin that automatically creates directories defined in your composer.json.",
+    "type": "composer-plugin",
+    "license": "MIT",
+    "keywords": [
+        "composer-plugin",
+        "directories",
+        "mkdir",
+        "ensure-directories"
+    ],
+    "authors": [
+        {
+            "name": "Nikita Malyshev",
+            "homepage": "https://niklan.net"
+        }
+    ],
+    "require": {
+        "php": ">=8.2",
+        "composer-plugin-api": "^2.0"
+    },
+    "require-dev": {
+        "composer/composer": "^2.0",
+        "phpstan/phpstan": "^2.0",
+        "phpunit/phpunit": "^11.0",
+        "slevomat/coding-standard": "*",
+        "squizlabs/php_codesniffer": "^3.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Niklan\\ComposerDirectories\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Niklan\\ComposerDirectories\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "class": "Niklan\\ComposerDirectories\\DirectoriesPlugin"
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
+    },
+    "scripts": {
+        "phpcs": "phpcs",
+        "phpcbf": "phpcbf",
+        "phpstan": "phpstan analyse",
+        "phpunit": "phpunit",
+        "lint": [
+            "@phpcs",
+            "@phpstan"
+        ],
+        "test": [
+            "@lint",
+            "@phpunit"
+        ]
+    }
+}
